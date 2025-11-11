@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prompt Chain UI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Bank Support</h1>
+  <p>Enter a customer query and run the 5-step prompt chain. The script is deterministic JS (no external API).</p>
+  <textarea id="query" placeholder="e.g. I was charged $45 at Starbucks on 2025-11-01 and I want a refund"></textarea>
+  <br>
+  <button id="run" class="btn">Run Prompt Chain</button>
+  <button id="sample" class="btn">Sample: Card Lost</button>
+  <h2>Results</h2>
+  <div id="results"></div>
+
+  <script src="prompt-chain.js"></script>
+  <script>
+    function renderResults(arr){
+      const [intent, possible, chosen, extraction, response] = arr;
+      return `
+        <h3>1) Interpreted Intent</h3>
+        <pre>${intent}</pre>
+
+        <h3>2) Possible Categories</h3>
+        <pre>${JSON.stringify(possible,null,2)}</pre>
+
+        <h3>3) Chosen Category</h3>
+        <pre>${chosen}</pre>
+
+        <h3>4) Extracted Details</h3>
+        <pre>${JSON.stringify(extraction,null,2)}</pre>
+
+        <h3>5) Short Response</h3>
+        <pre>${response}</pre>
+        `;
+    }
+
+    document.getElementById('run').addEventListener('click', ()=>{
+      const q = document.getElementById('query').value.trim();
+      if(!q) return alert('Please enter a query');
+      try{
+        const out = runPromptChain(q);
+        document.getElementById('results').innerHTML = renderResults(out);
+      }catch(e){
+        document.getElementById('results').innerText = 'Error: '+e.message;
+      }
+    });
+    document.getElementById('sample').addEventListener('click', ()=>{
+      document.getElementById('query').value = "My debit card was stolen last night, card number ends 1234. Please block and replace it.";
+      document.getElementById('run').click();
+    });
+  </script>
+</body>
+</html>
